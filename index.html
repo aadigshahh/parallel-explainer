@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>// parallel — Interactive Explainer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FAFAF9;
+      --surface: #FFFFFF;
+      --text: #0A0A0A;
+      --muted: #6B7280;
+      --border: #E5E5E5;
+      --high: #16A34A;
+      --medium: #D97706;
+      --low: #DC2626;
+      --code-bg: #F4F4F5;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+      color: var(--text);
+    }
+    .logo-sub {
+      font-family: var(--sans);
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-top: 2px;
+    }
+    .hm-tag {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      border: 1px solid var(--text);
+      padding: 5px 12px;
+      letter-spacing: 0.04em;
+      cursor: default;
+      position: relative;
+    }
+    .hm-tag::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      right: 0;
+      top: calc(100% + 8px);
+      background: var(--text);
+      color: #fff;
+      font-size: 11px;
+      padding: 8px 12px;
+      width: 240px;
+      line-height: 1.5;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      z-index: 300;
+    }
+    .hm-tag:hover::after { opacity: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      padding: 96px 0 80px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-heading {
+      font-size: 52px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      max-width: 820px;
+      margin-bottom: 28px;
+      color: var(--text);
+    }
+    .hero-body {
+      font-size: 17px;
+      color: var(--muted);
+      max-width: 640px;
+      line-height: 1.75;
+      margin-bottom: 36px;
+    }
+    .hero-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+    }
+    .hero-pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 6px 14px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--surface);
+      letter-spacing: 0.04em;
+    }
+    .hero-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .hero-note a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+
+    /* ── Layout ── */
+    .page { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    section { padding: 96px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    .section-context {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 680px;
+      line-height: 1.75;
+      margin-bottom: 40px;
+    }
+    .section-context strong { color: var(--text); font-weight: 600; }
+
+    .table-hint {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Closing section ── */
+    .closing-section { padding: 96px 0; border-top: 1px solid var(--border); }
+    .closing-heading {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 32px;
+      color: var(--text);
+    }
+    .closing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 36px;
+    }
+    .closing-block { font-size: 14px; color: var(--muted); line-height: 1.75; }
+    .closing-links {
+      display: flex;
+      gap: 20px;
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+    .closing-links a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+    @media (max-width: 700px) {
+      .closing-grid { grid-template-columns: 1fr; }
+      .hero-heading { font-size: 32px; letter-spacing: -0.5px; }
+    }
+
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 24px;
+    }
+    .section-heading {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .section-subheading {
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    .section-body {
+      font-size: 15px;
+      color: var(--muted);
+      max-width: 680px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+    }
+
+    /* ── Section 1: Two-col ── */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr;
+      gap: 0;
+      border: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+    .compare-panel { padding: 24px; }
+    .compare-panel.human-panel { background: #F8F7F4; border-right: 1px solid var(--border); }
+    .compare-panel.ai-panel { background: var(--surface); }
+    .compare-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+    .vs-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      writing-mode: vertical-rl;
+      letter-spacing: 0.1em;
+    }
+    .panel-header {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    /* Fake Google */
+    .google-urlbar {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 10px;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .google-urlbar .lock { color: #4caf50; font-size: 10px; }
+    .google-meta { font-size: 11px; color: #70757a; margin-bottom: 12px; font-family: Arial, sans-serif; }
+    .google-results { display: flex; flex-direction: column; gap: 14px; }
+    .google-result { font-family: Arial, sans-serif; }
+    .g-ad-label {
+      display: inline-block;
+      font-size: 9px;
+      border: 1px solid #b3b3b3;
+      color: #006621;
+      padding: 1px 3px;
+      margin-right: 6px;
+      font-family: Arial, sans-serif;
+      vertical-align: middle;
+    }
+    .g-url { font-size: 12px; color: #006621; margin-bottom: 2px; }
+    .g-title { font-size: 18px; color: #1a0dab; margin-bottom: 4px; cursor: pointer; }
+    .g-title:hover { text-decoration: underline; }
+    .g-snippet { font-size: 13px; color: #545454; line-height: 1.5; }
+    .g-date { color: #70757a; }
+    .g-nav-noise {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #70757a;
+      font-family: Arial, sans-serif;
+      border-top: 1px solid #e5e5e5;
+      padding-top: 10px;
+      line-height: 1.8;
+    }
+
+    /* JSON display */
+    .json-block {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      line-height: 1.7;
+      background: var(--surface);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .json-key    { font-weight: 700; color: #0A0A0A; }
+    .json-string { color: #16803C; }
+    .json-number { color: #B45309; }
+    .json-bool   { color: #7C3AED; }
+    .json-null   { color: #6B7280; }
+
+    .stat-pills { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .pill {
+      font-family: var(--mono);
+      font-size: 11px;
+      padding: 4px 10px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: var(--code-bg);
+    }
+    .pill.green { border-color: #BBF7D0; background: #F0FDF4; color: var(--high); }
+    .pill.amber { border-color: #FDE68A; background: #FFFBEB; color: var(--medium); }
+    .pill.red   { border-color: #FECACA; background: #FEF2F2; color: var(--low); }
+
+    /* ── Interactive boxes ── */
+    .interactive-box {
+      border: 1px solid var(--border);
+      padding: 24px;
+      background: var(--surface);
+    }
+    .interactive-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      letter-spacing: 0.04em;
+    }
+    .input-row {
+      display: flex;
+      gap: 0;
+    }
+    .input-row input {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+      border-right: none;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+    .input-row input:focus { border-color: var(--text); }
+    .input-row input::placeholder { color: var(--muted); }
+    .btn {
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 500;
+      padding: 10px 20px;
+      background: var(--text);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: opacity 0.15s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading-state {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 16px;
+      display: none;
+    }
+    .result-area {
+      margin-top: 16px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      background: var(--code-bg);
+      display: none;
+    }
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--low);
+      margin-top: 16px;
+      display: none;
+    }
+
+    /* ── Section 2: Basis table ── */
+    .basis-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid var(--border);
+    }
+    .basis-table th {
+      font-family: var(--mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--code-bg);
+      font-weight: 500;
+    }
+    .basis-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      font-size: 14px;
+    }
+    .basis-table tr:last-child td { border-bottom: none; }
+    .basis-table tbody tr { cursor: pointer; transition: background 0.1s; }
+    .basis-table tbody tr:hover { background: var(--bg); }
+    .basis-table tbody tr.expanded { background: var(--bg); }
+
+    .field-name {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .conf-badge {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      letter-spacing: 0.06em;
+      display: inline-block;
+    }
+    .conf-HIGH   { background: #F0FDF4; color: var(--high);   border: 1px solid #BBF7D0; }
+    .conf-MEDIUM { background: #FFFBEB; color: var(--medium); border: 1px solid #FDE68A; }
+    .conf-LOW    { background: #FEF2F2; color: var(--low);    border: 1px solid #FECACA; }
+
+    .expand-arrow { color: var(--muted); font-size: 12px; user-select: none; transition: transform 0.2s; display: inline-block; }
+    .expand-arrow.open { transform: rotate(90deg); }
+
+    .expand-row td {
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .expand-content {
+      padding: 16px;
+      background: var(--bg);
+      display: none;
+      border-top: 1px solid var(--border);
+    }
+    .expand-content.open { display: block; }
+    .expand-field { margin-bottom: 10px; font-size: 13px; }
+    .expand-field-label {
+      font-family: var(--mono);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .expand-field a { color: var(--text); font-size: 12px; font-family: var(--mono); }
+    .expand-quote {
+      font-style: italic;
+      color: var(--muted);
+      font-size: 13px;
+      border-left: 2px solid var(--border);
+      padding-left: 10px;
+      margin: 4px 0;
+    }
+
+    .basis-summary {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      padding: 20px;
+      background: var(--surface);
+    }
+    .summary-counts {
+      font-family: var(--mono);
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .summary-insight { font-size: 14px; color: var(--muted); margin-bottom: 6px; }
+    .summary-stat { font-size: 14px; color: var(--text); font-weight: 500; }
+
+    /* ── Section 3: Steps ── */
+    .workflow-context {
+      border: 1px solid var(--border);
+      padding: 16px 20px;
+      margin-bottom: 28px;
+      background: var(--surface);
+    }
+    .workflow-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.04em;
+    }
+    .workflow-context p { font-size: 14px; color: var(--muted); }
+
+    .address-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .address-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .address-input {
+      font-family: var(--mono);
+      font-size: 14px;
+      color: var(--text);
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      background: var(--bg);
+      margin-bottom: 14px;
+      outline: none;
+    }
+
+    .steps-list {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      margin-bottom: 28px;
+      display: none;
+    }
+    .step-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-row.visible { opacity: 1; }
+    .step-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      width: 24px;
+      flex-shrink: 0;
+    }
+    .step-icon { width: 18px; flex-shrink: 0; }
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .checkmark { color: var(--high); font-size: 14px; }
+    .step-label { font-size: 14px; font-family: var(--mono); color: var(--text); }
+
+    .final-card {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 24px;
+      margin-bottom: 28px;
+      display: none;
+    }
+    .final-card-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .quote-block {
+      border-left: 2px solid var(--text);
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      background: var(--surface);
+      display: none;
+    }
+    .quote-text {
+      font-size: 15px;
+      font-style: italic;
+      color: var(--text);
+      margin-bottom: 10px;
+      line-height: 1.6;
+    }
+    .quote-attr {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-credit {
+      font-size: 14px;
+      color: var(--text);
+    }
+    .footer-credit a {
+      color: var(--text);
+      font-weight: 600;
+    }
+    .footer-note {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── API Key widget ── */
+    .api-key-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 200;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 12px 14px;
+      width: 260px;
+    }
+    .api-key-widget label {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .api-key-widget input {
+      font-family: var(--mono);
+      font-size: 11px;
+      width: 100%;
+      border: 1px solid var(--border);
+      padding: 7px 10px;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+    }
+    .api-key-widget input:focus { border-color: var(--text); }
+    .api-key-status {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 700px) {
+      .compare-grid {
+        grid-template-columns: 1fr;
+      }
+      .compare-divider {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        padding: 8px 24px;
+      }
+      .vs-label { writing-mode: horizontal-tb; }
+      .compare-panel.human-panel { border-right: none; border-bottom: 1px solid var(--border); }
+      .section-heading { font-size: 24px; }
+      .section-subheading { font-size: 16px; }
+.basis-table th:nth-child(4),
+      .basis-table td:nth-child(4) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="logo">// parallel</div>
+      <div class="logo-sub">Web Search Infrastructure for AI Agents</div>
+    </div>
+    <div class="hm-tag" data-tooltip="The web now has two users: humans and machines. Parallel serves the second.">HumanMachine</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- ══════════════════════════════════════════
+       HERO
+  ══════════════════════════════════════════ -->
+  <div class="hero">
+    <h1 class="hero-heading">Parallel gives AI agents accurate, structured, verified access to the open web.</h1>
+    <p class="hero-body">The web was built for humans — full of HTML noise, ads, and navigation menus designed for eyes. AI agents need something different: clean, compressed, verified data they can actually think with. Parallel rebuilds the web for machines. Used by Harvey, Opendoor, Modal, and hundreds of AI companies.</p>
+    <div class="hero-pills">
+      <div class="hero-pill">01 · What structured search looks like</div>
+      <div class="hero-pill">02 · How Parallel verifies every answer</div>
+      <div class="hero-pill">03 · How it handles complex multi-step research</div>
+    </div>
+    <div class="hero-note">An interactive explainer · <a href="https://parallel.ai" target="_blank" rel="noopener">parallel.ai</a></div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 1: Structured Search
+  ══════════════════════════════════════════ -->
+  <section id="s1">
+    <div class="section-label">// 01 · Structured Search</div>
+    <h2 class="section-heading">What does "structured for AI" actually mean?</h2>
+    <p class="section-context">When you Google something, you get a webpage — ads, navigation menus, cookie banners, infinite scroll. An AI agent can't think with that. Parallel strips all the noise and returns exactly what the AI needs: a clean JSON object with the relevant excerpt, source URL, relevance score, and token count. Nothing more.</p>
+
+    <!-- Two-column comparison -->
+    <div class="compare-grid">
+      <!-- Left: Human search -->
+      <div class="compare-panel human-panel">
+        <div class="panel-header">What a human sees</div>
+        <div class="google-urlbar">
+          <span class="lock">🔒</span>
+          <span>google.com/search?q=Lakewood+Ranch+HOA+Texas+contact</span>
+        </div>
+        <div class="google-meta">About 4,230,000 results (0.43 seconds)</div>
+        <div class="google-results">
+          <div class="google-result">
+            <div class="g-url"><span class="g-ad-label">Ad</span>hoa-management-solutions.com › lakewood › texas</div>
+            <div class="g-title">HOA Management Texas — Get a Free Quote Today</div>
+            <div class="g-snippet">Lakewood Ranch HOA services in Texas. Professional community management, dues collection, compliance enforcement. <span class="g-date">Sponsored · </span>Call now for a free consultation. Hours may vary...</div>
+          </div>
+          <div class="google-result">
+            <div class="g-url">lakeranch-hoa.org › contact-us › management-office</div>
+            <div class="g-title">Contact — Lakewood Ranch Homeowners Association</div>
+            <div class="g-snippet">Welcome to the Lakewood Ranch HOA website. For all inquiries please navigate to our online portal or attend our next monthly meeting. Board elections are coming up in <span class="g-date">Mar 2025 · </span>Click here to register your vehicle...</div>
+          </div>
+          <div class="google-result">
+            <div class="g-url">nextdoor.com › lakewood-ranch-tx › hoa-discussion-thread</div>
+            <div class="g-title">Anyone have the HOA contact number? - Lakewood Ranch Nextdoor</div>
+            <div class="g-snippet"><span class="g-date">Feb 12 — </span>Hey neighbors! Does anyone know the correct number for the HOA office? I've been trying to reach them about the fence situation and the number on the website goes to voicemail. My neighbor said they moved...</div>
+          </div>
+        </div>
+        <div class="g-nav-noise">
+          Home · About · Community Rules · Events · Pay Dues · Board Portal · Newsletter · Archive · Contact · Sitemap<br>
+          © 2024 Lakewood Ranch HOA · Privacy Policy · Accessibility · Terms of Use
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="compare-divider">
+        <span class="vs-label">vs</span>
+      </div>
+
+      <!-- Right: AI JSON -->
+      <div class="compare-panel ai-panel">
+        <div class="panel-header">What an AI agent receives</div>
+        <div class="json-block" id="static-json"></div>
+        <div class="stat-pills">
+          <div class="pill green">47 tokens</div>
+          <div class="pill green">0.94 relevance</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive search -->
+    <div class="interactive-box">
+      <div class="interactive-label">// See it live — type anything below and see what Parallel would return to an AI agent</div>
+      <div class="input-row">
+        <input type="text" id="s1-input" placeholder="e.g. OpenAI latest funding round" />
+        <button class="btn" id="s1-btn" onclick="runSearch()">Search</button>
+      </div>
+      <div class="loading-state" id="s1-loading">// searching...</div>
+      <div class="error-msg" id="s1-error">// search failed — check your API key and try again</div>
+      <div class="result-area" id="s1-result">
+        <div class="json-block" id="s1-json"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 2: Basis Confidence
+  ══════════════════════════════════════════ -->
+  <section id="s2">
+    <div class="section-label">// 02 · Basis Confidence</div>
+    <h2 class="section-heading">How does Parallel know when to trust its own answers?</h2>
+    <p class="section-context">Most AI either answers confidently or hallucinates confidently. You can't tell which is which. Parallel's Basis framework solves this — every single output field comes with a citation, a reasoning explanation, and a calibrated confidence score.<br><br><strong>HIGH confidence</strong> = found on an authoritative source = ~97% accurate = skip human review.<br><strong>LOW confidence</strong> = indirect or ambiguous source = ~64% accurate = a human should check this one.<br><br>The result: instead of reviewing every field manually, you only review the LOW ones. At scale across thousands of records, this saves enormous amounts of time.</p>
+
+    <div class="interactive-box" style="margin-bottom:0">
+      <div class="interactive-label">// Enter any company name</div>
+      <div class="input-row">
+        <input type="text" id="s2-input" placeholder="e.g. Stripe, Harvey AI, Notion..." />
+        <button class="btn" id="s2-btn" onclick="runBasis()">Research</button>
+      </div>
+      <div class="loading-state" id="s2-loading"></div>
+      <div class="error-msg" id="s2-error">// research failed — check your API key and try again</div>
+    </div>
+
+    <div id="s2-results" style="display:none; margin-top:0;">
+      <p class="table-hint">// Click any row to see the source, excerpt, and reasoning</p>
+      <table class="basis-table" id="basis-table" style="margin-top:8px;">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Value</th>
+            <th>Confidence</th>
+            <th style="width:32px"></th>
+          </tr>
+        </thead>
+        <tbody id="basis-tbody"></tbody>
+      </table>
+      <div class="basis-summary" id="basis-summary"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       SECTION 3: Multi-hop Research
+  ══════════════════════════════════════════ -->
+  <section id="s3">
+    <div class="section-label">// 03 · Multi-hop Research</div>
+    <h2 class="section-heading">Can it handle research that requires multiple steps?</h2>
+    <p class="section-context">Some research tasks aren't one search. They require finding the right source, navigating to it, reading the result, identifying what's still missing, searching again, and synthesizing everything. Parallel's Task API does this autonomously — navigating any web infrastructure it encounters without any custom training.<br><br>Here's a real workflow: Opendoor uses Parallel to research HOA status for every property they buy or sell. Before Parallel, a human researcher spent 10 minutes per property navigating state government portals. Now it takes 2 minutes of verification.</p>
+
+    <div class="workflow-context">
+      <div class="workflow-label">// Real workflow: Opendoor × Parallel</div>
+      <p>Every Opendoor real estate transaction requires HOA research. Before Parallel: 10 minutes per property. After: 2 minutes.</p>
+    </div>
+
+    <div class="address-box">
+      <div class="address-label">// Property address</div>
+      <input class="address-input" id="s3-address" value="4821 Westridge Drive, Austin, TX 78735" readonly />
+      <button class="btn" id="s3-btn" onclick="runSteps()">Run Research Agent</button>
+    </div>
+
+    <div class="steps-list" id="steps-list">
+      <div class="step-row" id="step-0">
+        <span class="step-num">01</span>
+        <span class="step-icon"></span>
+        <span class="step-label">Input received: 4821 Westridge Drive, Austin TX 78735</span>
+      </div>
+      <div class="step-row" id="step-1">
+        <span class="step-num">02</span>
+        <span class="step-icon"></span>
+        <span class="step-label">Identifying jurisdiction → Travis County, Texas</span>
+      </div>
+      <div class="step-row" id="step-2">
+        <span class="step-num">03</span>
+        <span class="step-icon"></span>
+        <span class="step-label">Navigating Texas Secretary of State portal → searching address</span>
+      </div>
+      <div class="step-row" id="step-3">
+        <span class="step-num">04</span>
+        <span class="step-icon"></span>
+        <span class="step-label">HOA confirmed: Westridge Hills HOA (Reg. #TX-HOA-48219)</span>
+      </div>
+      <div class="step-row" id="step-4">
+        <span class="step-num">05</span>
+        <span class="step-icon"></span>
+        <span class="step-label">Locating management company → Goodwin Management, Austin TX</span>
+      </div>
+      <div class="step-row" id="step-5">
+        <span class="step-num">06</span>
+        <span class="step-icon"></span>
+        <span class="step-label">Querying Travis County district court records for active litigation</span>
+      </div>
+      <div class="step-row" id="step-6">
+        <span class="step-num">07</span>
+        <span class="step-icon"></span>
+        <span class="step-label">No active litigation found. Research complete.</span>
+      </div>
+    </div>
+
+    <div class="final-card" id="final-card">
+      <div class="final-card-label">// Research output</div>
+      <div class="json-block" id="final-json"></div>
+    </div>
+
+    <div class="quote-block" id="quote-block">
+      <p class="quote-text">"We're just giving it a property address. Parallel goes to the Secretary of State website for that state, enters the property address into the portal, finds the results, and pulls out the information. We never trained it to do this."</p>
+      <div class="quote-attr">— Software Engineer, Opendoor</div>
+    </div>
+
+    <p style="font-size:14px;color:var(--muted);margin-bottom:20px;font-style:italic;">Parallel was never trained on any specific government portal. It figures it out every time.</p>
+
+    <div class="stat-pills" id="s3-pills" style="display:none;">
+      <div class="pill amber">10 min → 2 min per property</div>
+      <div class="pill">Across thousands of transactions</div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════
+       CLOSING
+  ══════════════════════════════════════════ -->
+  <div class="closing-section">
+    <div class="closing-heading">// What is Parallel?</div>
+    <div class="closing-grid">
+      <div class="closing-block">Parallel is web search infrastructure for AI agents. Their APIs are used by companies like Harvey (legal AI), Opendoor (real estate), Modal (cloud compute), and Kepler (financial research) to power accuracy-critical workflows at scale.</div>
+      <div class="closing-block">Their products include the Search API (fast structured search), the Task API (deep multi-step research with Basis verification), the Monitor API (track changes on any website), and three others — all built specifically for machines, not humans.</div>
+      <div class="closing-block">This page was built by Aadi Shah, a junior at USC studying Mechanical Engineering, after reading Parallel's docs, case studies, and job descriptions — built in a day to demonstrate what their platform actually does.</div>
+    </div>
+    <div class="closing-links">
+      <a href="https://parallel.ai" target="_blank" rel="noopener">parallel.ai</a>
+      <a href="https://linkedin.com/in/aadigshah" target="_blank" rel="noopener">linkedin.com/in/aadigshah</a>
+    </div>
+  </div>
+
+</div><!-- end .page -->
+
+<!-- Footer -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-credit">
+      Built by <a href="https://linkedin.com/in/aadigshah" target="_blank" rel="noopener">Aadi Shah</a> · USC '27
+    </div>
+    <div class="footer-note">An unofficial interactive explainer for Parallel Web Systems</div>
+  </div>
+</footer>
+
+<!-- API Key widget -->
+<div class="api-key-widget">
+  <label>// Anthropic API Key</label>
+  <input type="password" id="api-key-input" placeholder="sk-ant-..." autocomplete="off" />
+  <div class="api-key-status" id="api-key-status">Enter your key to enable live demos</div>
+</div>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────
+  const HARDCODED_KEY = 'YOUR_API_KEY_HERE';
+  const MODEL = 'claude-sonnet-4-6';
+  const MAX_TOKENS = 800;
+
+  // Simple in-memory cache — avoids burning tokens on repeat demos
+  const s1Cache = new Map();
+  const s2Cache = new Map();
+
+  function getKey() {
+    return localStorage.getItem('parallel_api_key') || HARDCODED_KEY;
+  }
+
+  // API key widget
+  const keyInput = document.getElementById('api-key-input');
+  const keyStatus = document.getElementById('api-key-status');
+  const saved = localStorage.getItem('parallel_api_key');
+  if (saved) {
+    keyInput.value = saved;
+    keyStatus.textContent = '✓ Key saved';
+  }
+  keyInput.addEventListener('input', () => {
+    const v = keyInput.value.trim();
+    if (v) {
+      localStorage.setItem('parallel_api_key', v);
+      keyStatus.textContent = '✓ Key saved';
+    } else {
+      localStorage.removeItem('parallel_api_key');
+      keyStatus.textContent = 'Enter your key to enable live demos';
+    }
+  });
+
+  // ── JSON Syntax Highlighter ──────────────────────────────────────
+  function syntaxHighlight(json) {
+    if (typeof json !== 'string') json = JSON.stringify(json, null, 2);
+    json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return json.replace(
+      /("(?:\\u[0-9a-fA-F]{4}|\\[^u]|[^\\"])*"(?:\s*:)?|true|false|null|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?)/g,
+      match => {
+        if (/^"/.test(match)) {
+          return /:$/.test(match)
+            ? `<span class="json-key">${match}</span>`
+            : `<span class="json-string">${match}</span>`;
+        }
+        if (/true|false/.test(match)) return `<span class="json-bool">${match}</span>`;
+        if (/null/.test(match))       return `<span class="json-null">${match}</span>`;
+        return `<span class="json-number">${match}</span>`;
+      }
+    );
+  }
+
+  // Static JSON for section 1
+  const staticData = {
+    query: "Lakewood Ranch HOA Texas contact",
+    results: [{
+      url: "lakeranch-hoa.org",
+      title: "Lakewood Ranch HOA — Contact & Management",
+      excerpt: "Lakewood Ranch HOA is managed by FirstService Residential. Contact: (512) 445-8200. Monthly dues: $285. Annual meetings held each March.",
+      relevance_score: 0.94,
+      tokens: 47
+    }]
+  };
+  document.getElementById('static-json').innerHTML = syntaxHighlight(staticData);
+
+  // Final HOA JSON for section 3
+  const hoaData = {
+    hoa_exists: true,
+    hoa_name: "Westridge Hills HOA",
+    registration_number: "TX-HOA-48219",
+    management_company: "Goodwin Management",
+    management_phone: "(512) 502-7333",
+    active_litigation: false,
+    monthly_dues_est: "$245-285",
+    confidence: "HIGH"
+  };
+  document.getElementById('final-json').innerHTML = syntaxHighlight(hoaData);
+
+  // ── API Call Helper ──────────────────────────────────────────────
+  async function callClaude(systemPrompt, userMessage, maxTokens = MAX_TOKENS) {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': getKey(),
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        max_tokens: maxTokens,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        system: systemPrompt,
+        messages: [{ role: 'user', content: userMessage }]
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) { console.error('API error:', JSON.stringify(data)); throw new Error(data.error?.message || `HTTP ${res.status}`); }
+    // Extract text block(s)
+    const textBlock = data.content.find(b => b.type === 'text');
+    if (!textBlock) throw new Error('No text block in response');
+    let text = textBlock.text.trim();
+    // Strip ```json fences
+    text = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    return JSON.parse(text);
+  }
+
+  // ── Section 1: Search ────────────────────────────────────────────
+  async function runSearch() {
+    const query = document.getElementById('s1-input').value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('s1-btn');
+    const loading = document.getElementById('s1-loading');
+    const error = document.getElementById('s1-error');
+    const result = document.getElementById('s1-result');
+    const jsonEl = document.getElementById('s1-json');
+
+    error.style.display = 'none';
+
+    // Serve from cache if available
+    if (s1Cache.has(query)) {
+      jsonEl.innerHTML = syntaxHighlight(s1Cache.get(query));
+      result.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    loading.style.display = 'block';
+    loading.textContent = '// searching...';
+    result.style.display = 'none';
+
+    const system = `You are simulating a Parallel Web Systems Search API response. Given a query, search the web and return ONLY a JSON object with: query (string), results (array of 3 objects each with: url, title, excerpt under 60 words, relevance_score 0-1, tokens integer). The excerpt should be dense with useful facts, no filler. No markdown, no preamble, just the JSON.`;
+
+    try {
+      const data = await callClaude(system, query);
+      s1Cache.set(query, data);
+      jsonEl.innerHTML = syntaxHighlight(data);
+      result.style.display = 'block';
+    } catch (e) {
+      error.style.display = 'block';
+      error.textContent = e.message.includes('JSON') ? '// error — response was not valid JSON. Try again.' : `// error — ${e.message}`;
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+      loading.style.display = 'none';
+    }
+  }
+
+  document.getElementById('s1-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runSearch();
+  });
+
+  // ── Section 2: Basis ─────────────────────────────────────────────
+  async function runBasis() {
+    const company = document.getElementById('s2-input').value.trim();
+    if (!company) return;
+
+    const btn = document.getElementById('s2-btn');
+    const loading = document.getElementById('s2-loading');
+    const error = document.getElementById('s2-error');
+    const results = document.getElementById('s2-results');
+
+    error.style.display = 'none';
+
+    // Serve from cache if available
+    const cacheKey = company.toLowerCase();
+    if (s2Cache.has(cacheKey)) {
+      renderBasisTable(s2Cache.get(cacheKey), company);
+      results.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    loading.style.display = 'block';
+    loading.textContent = `// researching ${company}...`;
+    results.style.display = 'none';
+
+    const system = `You are simulating a Parallel Web Systems Task API Basis output for company research. Search the web for real current information about the given company. Return ONLY valid JSON with this exact structure — an array called 'fields' with exactly 8 objects. Each object: { name (short field label), value (the researched answer), confidence ('HIGH' or 'MEDIUM' or 'LOW'), citation_url (real URL you found this from), excerpt (exact quote under 20 words from that source), reasoning (1 sentence explaining confidence level) }. Use these 8 field names in this order: 'CEO / Founder', 'Total Funding Raised', 'Founding Year', 'Number of Employees', 'Primary Customers', 'Tech Stack Signal', 'Recent News', 'Compliance / Certifications'. Be realistic: high confidence for facts easily found on official sources (founder name, founding year), medium for aggregated data, low for things rarely published publicly (tech stack internals, certifications not listed on site). This should feel like real Basis output — not everything is high confidence. Return only the JSON, no other text.`;
+
+    try {
+      const data = await callClaude(system, company, 2000);
+      const fields = Array.isArray(data) ? data : data.fields;
+      if (!fields || !fields.length) throw new Error('No fields in response');
+      s2Cache.set(cacheKey, fields);
+      renderBasisTable(fields, company);
+      results.style.display = 'block';
+    } catch (e) {
+      error.style.display = 'block';
+      error.textContent = e.message.includes('JSON') ? '// error — response was not valid JSON. Try again.' : `// error — ${e.message}`;
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+      loading.style.display = 'none';
+    }
+  }
+
+  document.getElementById('s2-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runBasis();
+  });
+
+  function renderBasisTable(fields, company) {
+    const tbody = document.getElementById('basis-tbody');
+    tbody.innerHTML = '';
+
+    let counts = { HIGH: 0, MEDIUM: 0, LOW: 0 };
+
+    fields.forEach((f, i) => {
+      const conf = f.confidence || 'MEDIUM';
+      counts[conf] = (counts[conf] || 0) + 1;
+
+      // Main row
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="field-name">${f.name}</span></td>
+        <td>${f.value || '—'}</td>
+        <td><span class="conf-badge conf-${conf}">${conf}</span></td>
+        <td style="text-align:center"><span class="expand-arrow" id="arr-${i}">›</span></td>
+      `;
+      tr.addEventListener('click', () => toggleExpand(i));
+      tbody.appendChild(tr);
+
+      // Expand row
+      const expTr = document.createElement('tr');
+      expTr.className = 'expand-row';
+      expTr.innerHTML = `
+        <td colspan="4">
+          <div class="expand-content" id="exp-${i}">
+            <div class="expand-field">
+              <div class="expand-field-label">Citation</div>
+              <a href="${f.citation_url || '#'}" target="_blank" rel="noopener">${f.citation_url || 'n/a'}</a>
+            </div>
+            <div class="expand-field">
+              <div class="expand-field-label">Excerpt</div>
+              <div class="expand-quote">"${f.excerpt || '—'}"</div>
+            </div>
+            <div class="expand-field">
+              <div class="expand-field-label">Reasoning</div>
+              <div style="font-size:13px;color:var(--muted)">${f.reasoning || '—'}</div>
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(expTr);
+    });
+
+    // Summary
+    const low = counts.LOW || 0;
+    const total = fields.length;
+    const summary = document.getElementById('basis-summary');
+    summary.innerHTML = `
+      <div class="summary-counts">
+        <span style="color:var(--high)">// ${counts.HIGH || 0} HIGH</span>
+        <span style="color:var(--medium)">${counts.MEDIUM || 0} MEDIUM</span>
+        <span style="color:var(--low)">${low} LOW</span>
+      </div>
+      <div class="summary-insight">${low === 0
+        ? `// All ${total} fields returned HIGH or MEDIUM confidence. No manual review needed for this record.`
+        : `// You only need to review ${low} field${low !== 1 ? 's' : ''} out of ${total}. The ${counts.HIGH || 0} HIGH confidence fields are 97% accurate — skip them. Focus human attention only where it matters.`
+      }</div>
+      <div class="summary-stat">High confidence fields are correct ~97% of the time. You can skip reviewing them.</div>
+    `;
+  }
+
+  function toggleExpand(i) {
+    const content = document.getElementById(`exp-${i}`);
+    const arrow = document.getElementById(`arr-${i}`);
+    const open = content.classList.toggle('open');
+    arrow.classList.toggle('open', open);
+  }
+
+  // ── Section 3: Animated Steps ────────────────────────────────────
+  let stepsRunning = false;
+
+  async function runSteps() {
+    if (stepsRunning) return;
+    stepsRunning = true;
+
+    const btn = document.getElementById('s3-btn');
+    btn.disabled = true;
+    btn.textContent = 'Running...';
+
+    const stepsList = document.getElementById('steps-list');
+    const finalCard = document.getElementById('final-card');
+    const quoteBlock = document.getElementById('quote-block');
+    const pills = document.getElementById('s3-pills');
+
+    // Reset step rows and hide results
+    document.querySelectorAll('.step-row').forEach(r => {
+      r.classList.remove('visible');
+      r.querySelector('.step-icon').innerHTML = '';
+    });
+    stepsList.style.display = 'block';
+    finalCard.style.display = 'none';
+    quoteBlock.style.display = 'none';
+    pills.style.display = 'none';
+
+    for (let i = 0; i < 7; i++) {
+      const row = document.getElementById(`step-${i}`);
+      const iconEl = row.querySelector('.step-icon');
+      row.classList.add('visible');
+      iconEl.innerHTML = '<span class="spinner"></span>';
+      await delay(900);
+      iconEl.innerHTML = '<span class="checkmark">✓</span>';
+    }
+
+    await delay(300);
+    finalCard.style.display = 'block';
+    await delay(300);
+    quoteBlock.style.display = 'block';
+    await delay(200);
+    pills.style.display = 'flex';
+
+    btn.textContent = 'Run Research Agent';
+    btn.disabled = false;
+    stepsRunning = false;
+  }
+
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+</script>
+</body>
+</html>
