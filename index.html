@@ -945,7 +945,7 @@
   // ── Config ──────────────────────────────────────────────────────
   const HARDCODED_KEY = 'YOUR_API_KEY_HERE';
   const MODEL = 'claude-sonnet-4-6';
-  const MAX_TOKENS = 800;
+  const MAX_TOKENS = 1500;
 
   // Simple in-memory cache — avoids burning tokens on repeat demos
   const s1Cache = new Map();
@@ -1122,7 +1122,7 @@
     const system = `You are simulating a Parallel Web Systems Task API Basis output for company research. Search the web for real current information about the given company. Return ONLY valid JSON with this exact structure — an array called 'fields' with exactly 8 objects. Each object: { name (short field label), value (the researched answer), confidence ('HIGH' or 'MEDIUM' or 'LOW'), citation_url (real URL you found this from), excerpt (exact quote under 20 words from that source), reasoning (1 sentence explaining confidence level) }. Use these 8 field names in this order: 'CEO / Founder', 'Total Funding Raised', 'Founding Year', 'Number of Employees', 'Primary Customers', 'Tech Stack Signal', 'Recent News', 'Compliance / Certifications'. Be realistic: high confidence for facts easily found on official sources (founder name, founding year), medium for aggregated data, low for things rarely published publicly (tech stack internals, certifications not listed on site). This should feel like real Basis output — not everything is high confidence. Return only the JSON, no other text.`;
 
     try {
-      const data = await callClaude(system, company, 2000);
+      const data = await callClaude(system, company, 3000);
       const fields = Array.isArray(data) ? data : data.fields;
       if (!fields || !fields.length) throw new Error('No fields in response');
       s2Cache.set(cacheKey, fields);
